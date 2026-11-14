@@ -1,9 +1,27 @@
 {
- "name":"@forgekit/desktop","version":"0.2.0","private":true,"type":"module",
- "main":"src/main.js","scripts":{"dev":"electron .","build:linux":"electron-builder --linux AppImage deb","build:windows":"electron-builder --win nsis"},
- "dependencies":{"@forgekit/core":"workspace:*"},
- "devDependencies":{"electron":"^37.0.0","electron-builder":"^26.0.12"},
- "build":{"appId":"xyz.tjstudios.forgekit","productName":"ForgeKit","directories":{"output":"release"},
- "files":["src/**/*","package.json"],"linux":{"category":"Development","target":["AppImage","deb"]},
- "win":{"target":["nsis"]},"nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true}}
+  "name": "@forgekit/desktop",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --platform=node --format=esm --external:electron --outfile=dist/main.js",
+    "dev": "pnpm build && electron .",
+    "build:linux": "pnpm build && electron-builder --linux AppImage deb",
+    "build:windows": "pnpm build && electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0"
+  },
+  "build": {
+    "appId": "xyz.tjstudios.forgekit",
+    "productName": "ForgeKit",
+    "directories": { "output": "release" },
+    "files": ["src/**/*", "dist/**/*", "package.json"],
+    "linux": { "category": "Development", "target": ["AppImage", "deb"] },
+    "win": { "target": ["nsis"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  }
 }
