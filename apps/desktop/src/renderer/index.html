@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ForgeKit</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<main class="shell">
+  <header><div class="mark">F</div><div><p class="eyebrow">TJ STUDIOS</p><h1>ForgeKit</h1><p class="sub">Your local application workbench</p></div><span class="version">v0.2.0</span></header>
+  <section class="panel">
+    <h2>Create a project</h2>
+    <label>Project name<input id="name" placeholder="my-awesome-app" maxlength="48"></label>
+    <label>Starter template<select id="template"></select></label>
+    <label>Parent directory<div class="path-row"><input id="directory" readonly placeholder="Choose where your project will live"><button id="browse" class="secondary">Browse</button></div></label>
+    <button id="create">Create local project</button>
+    <p id="status" role="status"></p>
+  </section>
+  <footer>Projects are generated on this computer. No web account required.</footer>
+</main>
+<script src="renderer.js"></script>
+</body></html>
