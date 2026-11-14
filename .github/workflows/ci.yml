@@ -1,0 +1,33 @@
+name: ForgeKit CI
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install workspace dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Run tests
+        run: pnpm test
+      - name: Check JavaScript syntax
+        run: pnpm lint:check
+      - name: Build VS Code extension
+        run: pnpm build:vscode
+      - name: Bundle desktop application
+        run: pnpm --filter @forgekit/desktop build
