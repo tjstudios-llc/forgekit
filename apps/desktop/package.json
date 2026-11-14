@@ -1,0 +1,9 @@
+{
+ "name":"@forgekit/desktop","version":"0.2.0","private":true,"type":"module",
+ "main":"src/main.js","scripts":{"dev":"electron .","build:linux":"electron-builder --linux AppImage deb","build:windows":"electron-builder --win nsis"},
+ "dependencies":{"@forgekit/core":"workspace:*"},
+ "devDependencies":{"electron":"^37.0.0","electron-builder":"^26.0.12"},
+ "build":{"appId":"xyz.tjstudios.forgekit","productName":"ForgeKit","directories":{"output":"release"},
+ "files":["src/**/*","package.json"],"linux":{"category":"Development","target":["AppImage","deb"]},
+ "win":{"target":["nsis"]},"nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true}}
+}
