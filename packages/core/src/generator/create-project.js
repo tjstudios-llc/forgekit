@@ -1,11 +1,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { validateProjectOptions } from "../config.js";
 import { getTemplate } from "../templates/registry.js";
 import { renderValue } from "./render.js";
 import { provisionDatabase } from "../database/postgres.js";
 import { installDependencies } from "./install.js";
 
-export async function createProject(options) {
+export async function createProject(input) {
+  const options = validateProjectOptions(input);
   const template = getTemplate(options.template);
   const parentDir = path.resolve(options.path || process.cwd());
   const targetDir = path.resolve(parentDir, options.name);
@@ -27,10 +29,16 @@ export async function createProject(options) {
       if (!absolutePath.startsWith(targetDir + path.sep)) throw new Error(\`Unsafe template path: \${relativePath}\`);
       await fs.mkdir(path.dirname(absolutePath), { recursive: true });
       const rendered = renderValue(rawValue, { name: options.name, title });
-      const content = typeof rendered === "string" ? rendered : \`\${JSON.stringify(rendered, null, 2)}\n\`;
-      await fs.writeFile(absolutePath, content, { mode: relativePath === ".env" ? 0o600 : 0o644, flag: "wx" });
+      const fileContent = typeof rendered === "string" ? rendered : \`\${JSON.stringify(rendered, null, 2)}\n\`;
+      await fs.writeFile(absolutePath, fileContent, { mode: relativePath === ".env" ? 0o600 : 0o644, flag: "wx" });
     }
-    await fs.writeFile(path.join(targetDir, ".gitignore"), "node_modules/\n.env\n.env.*\n!.env.example\n.next/\ndist/\n", { flag: "wx" });
+    const gitignorePath = path.join(targetDir, ".gitignore");
+    try {
+      await fs.writeFile(gitignorePath, "node_modules/\n.env\n.env.*\n!.env.example\n.next/\ndist/\n", { flag: "wx" });
+    } catch (error) {
+      if (error.code !== "EEXIST") throw error;
+    }
+
     let databaseResult = { created: false, reason: "Database provisioning not requested." };
     if (options.database === "postgres") {
       databaseResult = options.adminUrl
