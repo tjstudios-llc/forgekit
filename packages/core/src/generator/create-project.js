@@ -11,46 +11,73 @@ export async function createProject(input) {
   const template = getTemplate(options.template);
   const parentDir = path.resolve(options.path || process.cwd());
   const targetDir = path.resolve(parentDir, options.name);
-  if (targetDir === parentDir || !targetDir.startsWith(parentDir + path.sep)) {
+  const relativeTarget = path.relative(parentDir, targetDir);
+
+  if (!relativeTarget || relativeTarget.startsWith("..") || path.isAbsolute(relativeTarget)) {
     throw new Error("Project target must be inside the selected parent directory.");
   }
+
   try {
     await fs.access(targetDir);
     throw new Error("Target already exists: " + targetDir);
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
+
   const title = options.name.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   await fs.mkdir(targetDir, { recursive: false });
+
   try {
     for (const [relativePath, rawValue] of Object.entries(template.files)) {
       const absolutePath = path.resolve(targetDir, relativePath);
-      if (!absolutePath.startsWith(targetDir + path.sep)) throw new Error("Unsafe template path: " + relativePath);
+      const relativeFile = path.relative(targetDir, absolutePath);
+      if (!relativeFile || relativeFile.startsWith("..") || path.isAbsolute(relativeFile)) {
+        throw new Error("Unsafe template path: " + relativePath);
+      }
       await fs.mkdir(path.dirname(absolutePath), { recursive: true });
       const rendered = renderValue(rawValue, { name: options.name, title });
       const fileContent = typeof rendered === "string" ? rendered : JSON.stringify(rendered, null, 2) + "\n";
-      await fs.writeFile(absolutePath, fileContent, { mode: relativePath === ".env" ? 0o600 : 0o644, flag: "wx" });
+      await fs.writeFile(absolutePath, fileContent, {
+        mode: relativePath === ".env" ? 0o600 : 0o644,
+        flag: "wx"
+      });
     }
+
     const gitignorePath = path.join(targetDir, ".gitignore");
     try {
       await fs.writeFile(gitignorePath, "node_modules/\n.env\n.env.*\n!.env.example\n.next/\ndist/\n", { flag: "wx" });
     } catch (error) {
       if (error.code !== "EEXIST") throw error;
     }
+
     let databaseResult = { created: false, reason: "Database provisioning not requested." };
     if (options.database === "postgres") {
       databaseResult = options.adminUrl
         ? await provisionDatabase({ adminUrl: options.adminUrl, databaseName: options.dbName })
         : { created: false, reason: "No PostgreSQL admin URL supplied; configure DATABASE_URL manually." };
-      const databaseUrl = (options.databaseUrl || "postgresql://USER:PASSWORD@localhost:5432/DATABASE").replaceAll('"', "");
-      await fs.writeFile(path.join(targetDir, ".env"), "DATABASE_URL=\"" + databaseUrl + "\"\n", { mode: 0o600, flag: "wx" });
+
+      const databaseUrl = options.databaseUrl || "postgresql://USER:PASSWORD@localhost:5432/DATABASE";
+      await fs.writeFile(
+        path.join(targetDir, ".env"),
+        "DATABASE_URL=" + serializeEnvValue(databaseUrl) + "\n",
+        { mode: 0o600, flag: "wx" }
+      );
     }
+
     const installResult = options.install
       ? await installDependencies(targetDir, options.packageManager)
       : { installed: false, reason: "Dependency installation skipped." };
+
     return { targetDir, template: template.title, databaseResult, installResult };
   } catch (error) {
     await fs.rm(targetDir, { recursive: true, force: true });
     throw error;
   }
+}
+
+function serializeEnvValue(value) {
+  if (typeof value !== "string" || /[\0\r\n]/.test(value)) {
+    throw new Error("DATABASE_URL must be a single-line string.");
+  }
+  return '"' + value.replaceAll("\\", "\\\\").replaceAll('"', '\\"') + '"';
 }
