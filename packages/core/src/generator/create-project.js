@@ -16,36 +16,34 @@ export async function createProject(input) {
   }
   try {
     await fs.access(targetDir);
-    throw new Error(\`Target already exists: \${targetDir}\`);
+    throw new Error("Target already exists: " + targetDir);
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
-
-  const title = options.name.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const title = options.name.replace(/[-_]/g, " ").replace(/\\b\\w/g, (c) => c.toUpperCase());
   await fs.mkdir(targetDir, { recursive: false });
   try {
     for (const [relativePath, rawValue] of Object.entries(template.files)) {
       const absolutePath = path.resolve(targetDir, relativePath);
-      if (!absolutePath.startsWith(targetDir + path.sep)) throw new Error(\`Unsafe template path: \${relativePath}\`);
+      if (!absolutePath.startsWith(targetDir + path.sep)) throw new Error("Unsafe template path: " + relativePath);
       await fs.mkdir(path.dirname(absolutePath), { recursive: true });
       const rendered = renderValue(rawValue, { name: options.name, title });
-      const fileContent = typeof rendered === "string" ? rendered : \`\${JSON.stringify(rendered, null, 2)}\n\`;
+      const fileContent = typeof rendered === "string" ? rendered : JSON.stringify(rendered, null, 2) + "\\n";
       await fs.writeFile(absolutePath, fileContent, { mode: relativePath === ".env" ? 0o600 : 0o644, flag: "wx" });
     }
     const gitignorePath = path.join(targetDir, ".gitignore");
     try {
-      await fs.writeFile(gitignorePath, "node_modules/\n.env\n.env.*\n!.env.example\n.next/\ndist/\n", { flag: "wx" });
+      await fs.writeFile(gitignorePath, "node_modules/\\n.env\\n.env.*\\n!.env.example\\n.next/\\ndist/\\n", { flag: "wx" });
     } catch (error) {
       if (error.code !== "EEXIST") throw error;
     }
-
     let databaseResult = { created: false, reason: "Database provisioning not requested." };
     if (options.database === "postgres") {
       databaseResult = options.adminUrl
         ? await provisionDatabase({ adminUrl: options.adminUrl, databaseName: options.dbName })
         : { created: false, reason: "No PostgreSQL admin URL supplied; configure DATABASE_URL manually." };
       const databaseUrl = (options.databaseUrl || "postgresql://USER:PASSWORD@localhost:5432/DATABASE").replaceAll('"', "");
-      await fs.writeFile(path.join(targetDir, ".env"), \`DATABASE_URL="\${databaseUrl}"\n\`, { mode: 0o600, flag: "wx" });
+      await fs.writeFile(path.join(targetDir, ".env"), "DATABASE_URL=\"" + databaseUrl + "\"\\n", { mode: 0o600, flag: "wx" });
     }
     const installResult = options.install
       ? await installDependencies(targetDir, options.packageManager)
