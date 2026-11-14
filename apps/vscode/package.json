@@ -1,0 +1,13 @@
+{
+ "name":"@forgekit/vscode","displayName":"ForgeKit — Project Generator","description":"Create local starter applications from ForgeKit templates.",
+ "version":"0.2.0","publisher":"tjstudios","engines":{"vscode":"^1.90.0"},
+ "categories":["Other"],"main":"./dist/extension.js",
+ "activationEvents":["onCommand:forgekit.createProject","onCommand:forgekit.listTemplates"],
+ "contributes":{"commands":[
+  {"command":"forgekit.createProject","title":"ForgeKit: Create Project","category":"ForgeKit"},
+  {"command":"forgekit.listTemplates","title":"ForgeKit: List Templates","category":"ForgeKit"}
+ ]},
+ "scripts":{"build":"esbuild src/extension.js --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js","vscode:prepublish":"pnpm build"},
+ "devDependencies":{"esbuild":"^0.25.0"},
+ "dependencies":{"@forgekit/core":"workspace:*"}
+}
