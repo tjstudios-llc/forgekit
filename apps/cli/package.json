@@ -1,0 +1,1 @@
+{"name":"@forgekit/cli","version":"0.2.0","private":true,"type":"module","bin":{"forgekit":"./bin/forgekit.js"},"dependencies":{"@forgekit/core":"workspace:*","@inquirer/prompts":"^7.3.3","commander":"^14.0.0"}}

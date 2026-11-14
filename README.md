@@ -1,102 +1,55 @@
-<<<<<<< HEAD
-# forgekit
-=======
 # ForgeKit
 
-ForgeKit is a JavaScript CLI that scaffolds applications from reusable templates and can optionally provision a PostgreSQL database.
+ForgeKit is a local-first application generator. Version 0.2 introduces a shared Core package with CLI, VS Code, and desktop interfaces while retaining the original v0.1 generator under the root src/ and bin/ paths for compatibility.
 
 ## Requirements
-
 - Node.js 22+
-- npm
-- PostgreSQL 14+ (only if provisioning a database)
+- pnpm 10+
+- PostgreSQL is optional and only needed when explicitly provisioning a database.
 
-## Install for development
-
+## Workspace setup
 ```bash
-npm install
-npm link
-forgekit --help
+corepack enable
+pnpm install
+pnpm test
+pnpm lint:check
 ```
 
-## Create a project
-
-Interactive:
-
+## CLI
 ```bash
-forgekit create
+pnpm cli -- --help
+pnpm cli -- templates
+pnpm cli -- create my-app --template express --path ~/projects --no-install
 ```
 
-Non-interactive:
+Templates: nextjs, react-vite, express, fastify, and fullstack. Database creation is opt-in and requires a PostgreSQL provisioning URL with CREATEDB permission. Keep that credential separate from the application's least-privilege DATABASE_URL.
 
+## VS Code
 ```bash
-forgekit create my-app --template fullstack --path ~/projects --database postgres --db-name my_app
+pnpm --filter @forgekit/vscode build
 ```
+Open apps/vscode in VS Code and package it with vsce when ready.
 
-Skip package installation:
-
+## Desktop
 ```bash
-forgekit create my-app --template express --no-install
+pnpm desktop:dev
 ```
+Build targets are provided for Linux (AppImage/deb) and Windows (NSIS). Project execution remains local; no web service is required.
 
-List templates:
+## Architecture
+- packages/core: validation, templates, rendering, generation, optional PostgreSQL provisioning.
+- apps/cli: terminal interface.
+- apps/vscode: editor integration.
+- apps/desktop: Electron desktop shell.
+- src/ and bin/: v0.1 compatibility implementation.
 
-```bash
-forgekit templates
-```
+## Safety
+- Existing target directories are never overwritten.
+- ForgeKit never executes generated project code.
+- Dependency installation is explicit and can be disabled.
+- PostgreSQL provisioning is opt-in.
+- Credentials are not logged; generated .env files use restrictive permissions where supported.
 
-## PostgreSQL provisioning
-
-ForgeKit does not assume it owns your PostgreSQL server. To create a database, provide an administrative connection string through `--admin-url` or `FORGEKIT_POSTGRES_ADMIN_URL`.
-
-```bash
-export FORGEKIT_POSTGRES_ADMIN_URL='postgresql://forgekit_admin:password@127.0.0.1:5432/postgres'
-forgekit create my-app --template fullstack --database postgres --db-name my_app --database-url 'postgresql://app_user:app_password@127.0.0.1:5432/my_app' 
-```
-
-Use a role with `CREATEDB` permission, preferably a dedicated provisioning role rather than the PostgreSQL superuser. ForgeKit creates only the requested database; it does not create roles or change server-wide configuration. Database names are validated and quoted safely. The generated application receives a separate application `DATABASE_URL` in `.env`. Never reuse the provisioning/admin URL as the application credential; create a least-privilege application role and pass its connection string with `--database-url` or `FORGEKIT_POSTGRES_APP_URL`.
-
-If no admin URL is supplied, ForgeKit will generate the project and `.env.example`, but will not create a database. It will clearly report the manual connection step.
-
-## Templates
-
-- `nextjs`: Next.js App Router + JavaScript
-- `react-vite`: React + Vite + JavaScript
-- `express`: Express API + JavaScript
-- `fastify`: Fastify API + JavaScript
-- `fullstack`: Next.js + Prisma + PostgreSQL starter
-
-## Safety and behavior
-
-- Refuses to overwrite an existing target directory.
-- Never runs generated project code.
-- Dependency installation is an explicit subprocess and can be disabled with `--no-install`.
-- PostgreSQL credentials are not written to logs.
-- `.env` is created with restrictive permissions where supported and excluded from Git.
-- Database provisioning is opt-in and requires a PostgreSQL admin connection string.
-- Generated `.env` files contain placeholders if database provisioning is skipped.
-
-## Project layout
-
-```text
-forgekit/
-├── bin/forgekit.js
-├── src/
-│   ├── cli.js
-│   ├── index.js
-│   ├── config.js
-│   ├── generator/
-│   ├── database/
-│   └── templates/
-└── test/
-```
-
-## Roadmap
-
-1. More templates and template versioning
-2. Custom template packs
-3. Docker Compose generation
-4. Git initialization
-5. Template validation and preview
-6. Optional web dashboard using the same engine
->>>>>>> fceae8e (Initial ForgeKit v0.1.0)
+## Releases
+- v0.1.0: original standalone CLI generator.
+- v0.2.0: shared Core workspace and local CLI/editor/desktop interfaces.

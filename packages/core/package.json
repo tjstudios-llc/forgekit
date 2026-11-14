@@ -1,0 +1,8 @@
+{
+  "name":"@forgekit/core","version":"0.2.0",
+  "description":"Shared project generation, templates, validation, and database provisioning engine.",
+  "type":"module",
+  "exports":{".":"./src/index.js","./config":"./src/config.js","./database":"./src/database/postgres.js"},
+  "engines":{"node":">=22"},
+  "dependencies":{"pg":"^8.16.3","zod":"^4.1.5"}
+}
