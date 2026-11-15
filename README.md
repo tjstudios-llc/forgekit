@@ -1,6 +1,6 @@
 # ForgeKit
 
-ForgeKit is a local-first application generator. Version 0.2 introduces a shared Core package with CLI, VS Code, and desktop interfaces while retaining the original v0.1 generator under the root src/ and bin/ paths for compatibility.
+ForgeKit is a local-first application generator. Version 0.2 introduces a shared Core package with CLI, VS Code, and desktop interfaces. The root `src/` and `bin/` paths remain as v0.1 compatibility entry points backed by the same shared Core and CLI.
 
 ## Requirements
 - Node.js 22+
@@ -41,7 +41,7 @@ Build targets are provided for Linux (AppImage/deb) and Windows (NSIS). Project 
 - apps/cli: terminal interface.
 - apps/vscode: editor integration.
 - apps/desktop: Electron desktop shell.
-- src/ and bin/: v0.1 compatibility implementation.
+- src/ and bin/: v0.1 compatibility entry points that delegate to the shared Core and CLI.
 
 ## Safety
 - Existing target directories are never overwritten.

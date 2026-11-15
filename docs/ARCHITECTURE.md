@@ -3,7 +3,7 @@
 ## Design goals
 - Local-first execution: generated projects are created on the user's machine.
 - One generation engine: CLI, VS Code, and desktop call the same Core API.
-- Compatibility: the original v0.1 root entry points remain in the repository.
+- Compatibility: the original v0.1 root entry points remain as adapters to the shared v0.2 implementation.
 - Optional integrations: PostgreSQL provisioning is explicit; the web dashboard is not required.
 
 ## Workspace
@@ -11,6 +11,7 @@
 - apps/cli: Commander/Inquirer terminal experience.
 - apps/vscode: VS Code commands that invoke Core directly.
 - apps/desktop: Electron shell with context isolation and a narrow preload bridge.
+- src/ and bin/: legacy import and executable paths that re-export or invoke the shared implementations.
 
 ## Project creation flow
 1. Interface collects a project name, template, destination, and optional database settings.
